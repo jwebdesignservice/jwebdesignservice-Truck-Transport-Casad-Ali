@@ -331,16 +331,22 @@ function initReviewsSlider() {
         return cards.length;
     }
     
-    // Create dots (one per card for mobile/tablet)
+    // Create dots (one per card for mobile/tablet, one per scroll position for desktop)
     function createDots() {
         dotsContainer.innerHTML = '';
         const totalSlides = getTotalSlides();
+        const visibleCards = getVisibleCards();
         
-        for (let i = 0; i < totalSlides; i++) {
+        // On desktop (scrolling 2 at a time), create dots for each scroll position
+        const numDots = visibleCards === 2 ? Math.ceil(totalSlides / 2) : totalSlides;
+        
+        for (let i = 0; i < numDots; i++) {
             const dot = document.createElement('button');
             dot.className = `slider-dot ${i === 0 ? 'active' : ''}`;
             dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
-            dot.addEventListener('click', () => goToSlide(i));
+            // For desktop, multiply by visibleCards to jump to correct position
+            const slideIndex = visibleCards === 2 ? i * 2 : i;
+            dot.addEventListener('click', () => goToSlide(slideIndex));
             dotsContainer.appendChild(dot);
         }
     }
@@ -354,8 +360,12 @@ function initReviewsSlider() {
         
         // Update dots
         const dots = dotsContainer.querySelectorAll('.slider-dot');
+        const visibleCards = getVisibleCards();
+        
         dots.forEach((dot, i) => {
-            dot.classList.toggle('active', i === currentIndex);
+            // For desktop (scrolling 2 at a time), activate dot based on position / 2
+            const activeDotIndex = visibleCards === 2 ? Math.floor(currentIndex / 2) : currentIndex;
+            dot.classList.toggle('active', i === activeDotIndex);
         });
         
         // Update button states
